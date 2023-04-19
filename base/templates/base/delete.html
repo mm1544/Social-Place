@@ -1,0 +1,14 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+{% comment %} If 'action=""' is an empty str then user will be sent to the same url. {% endcomment %}
+<form method="POST" action="">
+    {% csrf_token %}
+    <p>Are you sure you want to delete "{{obj}}"?</p>
+    {% comment %} 'request.META.HTTP_REFERER' --> will send user to URL where he came from. {% endcomment %}
+    <a href="{{request.META.HTTP_REFERER}}">Go Back</a>
+    <input type="submit" value="Confirm"/>
+</form>
+
+{% endblock %}

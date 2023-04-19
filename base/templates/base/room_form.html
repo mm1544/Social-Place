@@ -1,0 +1,15 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<div>
+    {% comment %} If 'action' is not specified, then form will be sent to current url {% endcomment %}
+    <form method="POST" action="">
+        {% comment %} 'csrf_token' token will be sent on every Form Submit {% endcomment %}
+        {% csrf_token %}
+        {{form.as_p}}
+        <input type="submit" value="Submit">
+    </form>
+</div>
+
+{% endblock %}

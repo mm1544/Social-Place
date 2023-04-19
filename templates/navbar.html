@@ -1,0 +1,16 @@
+<a href="/">
+    <h1>Logo</h1>
+</a>
+<hr>
+<form method="GET" action="{% url 'home' %}">
+    {% comment %} Will take the input and will embed into url as a 'q' value {% endcomment %}
+    <input type="text" name="q" placeholder="Search Rooms...">
+</form>
+
+{% comment %} (!!) request can be accessed directly from the template (!!). If user is authenticated then we have a (!!)Session in the browser. {% endcomment %}
+{% if request.user.is_authenticated %}
+<p>Hi, {{request.user}}</p>
+    <a href="{% url 'logout' %}">Logout</a>
+{% else %}
+    <a href="{% url 'login' %}">Login</a>
+{% endif %}
