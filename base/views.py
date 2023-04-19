@@ -97,7 +97,9 @@ def home(request):
 
 def room(request, pk):
     room = Room.objects.get(id=pk)
-    context = {'room': room}
+    # (!!) It is a special Dj way to get a Set of all the Messages of this Room (!!)
+    room_messages = room.message_set.all().order_by('-created')
+    context = {'room': room, 'room_messages': room_messages}
     return render(request, 'base/room.html', context)
 
 # Unauthorised User will be redirected to 'login' url
