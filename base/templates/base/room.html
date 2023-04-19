@@ -19,4 +19,15 @@
     {% endfor %}
 </div>
 
-{% endblock content %}
+{% if request.user.is_authenticated %}
+<div class='comment-form'>
+    {% comment %} If 'action' is not specified, then form will be sent to current url {% endcomment %}
+    <form method="POST" action="">
+        {% csrf_token %}
+        {% comment %} Form will be submitted pressing Enter key. {% endcomment %}
+        <input type="text" name="body" placeholder="Write your message here..."/>
+    </form>
+</div>
+{% endif %}
+
+{% endblock %}
