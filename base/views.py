@@ -97,8 +97,10 @@ def home(request):
 
 def room(request, pk):
     room = Room.objects.get(id=pk)
-    # (!!) It is a special Dj way to get a Set of all the Messages of this Room (!!)
+    # (!!) It is a special Dj way to get a Set of all the Messages of this Room (!!). It can be used for ManyToOne relationship
     room_messages = room.message_set.all().order_by('-created')
+    # '.all()' used on ManyToMany relationship field
+    participants = room.participants.all()
 
     if request.method == 'POST':
         message = Message.objects.create(
@@ -106,10 +108,12 @@ def room(request, pk):
             room=room,
             body=request.POST.get('body')
         )
-        # I could not do 'redirect' and the page would be anyway refreshed, but I explicitly want this Page to fully reload (!!!)
+        # Adding User to M2M 'participants' field after message is created
+        room.participants.add(request.user)
+        # It is not necessary to 'redirect' and the page would be anyway refreshed, but I explicitly want this Page to fully reload (!!!)
         return redirect('room', pk=room.id)
 
-    context = {'room': room, 'room_messages': room_messages}
+    context = {'room': room, 'room_messages': room_messages, 'participants': participants}
     return render(request, 'base/room.html', context)
 
 # Unauthorised User will be redirected to 'login' url
@@ -156,3 +160,16 @@ def deleteRoom(request, pk):
         room.delete()
         return redirect('home')
     return render(request, 'base/delete.html', {'obj': room})
+
+
+@login_required(login_url='login')
+def deleteMessage(request, pk):
+    message = Message.objects.get(id=pk)
+
+    if request.user != message.user:
+        return HttpResponse('You are not authorized')
+
+    if request.method == 'POST':
+        message.delete()
+        return redirect('home')
+    return render(request, 'base/delete.html', {'obj': message})

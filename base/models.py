@@ -19,7 +19,8 @@ class Room(models.Model):
     # blank=True --> for when we run save() a Room instance, 'description' field can be empty
     # null=True --> for the database, allows empty field
     description = models.TextField(null=True, blank=True)
-    # participants =
+    # Many2Many field
+    participants = models.ManyToManyField(User, related_name='participants', blank=True)
     updated = models.DateTimeField(auto_now=True)
     # 'auto_now_add' adds time stamp only when we crete the instance
     created = models.DateTimeField(auto_now_add=True)
