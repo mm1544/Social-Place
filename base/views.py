@@ -136,7 +136,10 @@ def createRoom(request):
         # Passing 'request.POST' to RoomForm and Django knows wich data to extract from 'request.POST'.
         form = RoomForm(request.POST)
         if form.is_valid():
-            form.save() # Django will save Room model in DB
+            room = form.save(commit=False)
+            # You can create Room only if you are logged in therefore 'request.user' - is an actual logged-in user.
+            room.host = request.user
+            room.save()
             return redirect('home')
     context = {'form': form}
     return render(request, 'base/room_form.html', context)
