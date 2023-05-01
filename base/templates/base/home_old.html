@@ -1,0 +1,29 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<style>
+    .home-container{
+        display: grid;
+        {% comment %} 'fr' is a fraction. We have created 2 columns ('1fr' and '3fr') and here will specify how many fractions of a screen/page it will take. {% endcomment %}
+        grid-template-columns: 1fr 3fr 1fr;
+    }
+</style>
+
+<div class="home-container">
+    {% comment %} Each of 'div' will form a column {% endcomment %}
+    <div>
+        {% include 'base/topics_component.html' %}
+    </div>
+    <div>
+        <h5>{{room_count}} rooms available</h5>
+        <a href="{% url 'create-room' %}">Create Room</a>
+        
+        {% include 'base/feed_component.html' %}
+
+    </div>
+    <div>
+        {% include 'base/activity_component.html' %}
+    </div>
+</div>
+{% endblock content %}

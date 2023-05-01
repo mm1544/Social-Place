@@ -132,6 +132,7 @@ def userProfile(request, pk):
 def createRoom(request):
     # It creates an empty Form
     form = RoomForm()
+    topics = Topic.objects.all()
     if request.method == 'POST':
         # Passing 'request.POST' to RoomForm and Django knows wich data to extract from 'request.POST'.
         form = RoomForm(request.POST)
@@ -141,7 +142,7 @@ def createRoom(request):
             room.host = request.user
             room.save()
             return redirect('home')
-    context = {'form': form}
+    context = {'form': form, 'topics': topics}
     return render(request, 'base/room_form.html', context)
 
 @login_required(login_url='login')
@@ -149,6 +150,7 @@ def updateRoom(request, pk):
     room = Room.objects.get(id=pk)
     # Form will be prefilled with 'room' values
     form = RoomForm(instance=room)
+    topics = Topic.objects.all()
 
     if request.user != room.host:
         return HttpResponse('You are not authorized')
@@ -160,7 +162,7 @@ def updateRoom(request, pk):
             form.save()
             return redirect('home')
 
-    context = {'form': form}
+    context = {'form': form, 'topics': topics}
     return render(request, 'base/room_form.html', context)
 
 @login_required(login_url='login')
