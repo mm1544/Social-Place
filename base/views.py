@@ -9,7 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.forms import UserCreationForm
 from .models import Room, Topic, Message
-from .forms import RoomForm
+from .forms import RoomForm, UserForm
 
 # rooms = [
 #     {'id': 1, 'name': 'Java'},
@@ -88,7 +88,8 @@ def home(request):
         Q(description__icontains=q)
         )
 
-    topics = Topic.objects.all()
+    # '[0:5]' -> because I want to list just first 5 topics
+    topics = Topic.objects.all()[0:5]
     # 'count'-> quaryset method; len() could be used but count() is faster
     room_count = rooms.count()
     room_messages = Message.objects.filter(Q(room__topic__name__icontains=q))
@@ -134,14 +135,20 @@ def createRoom(request):
     form = RoomForm()
     topics = Topic.objects.all()
     if request.method == 'POST':
+        topic_name = request.POST.get('topic')
+        # Method 'get_or_create' will return an object ('topic') and 'created' (which is True or False). If method can't find the object, it will create it.
+        topic, created = Topic.objects.get_or_create(name=topic_name)
         # Passing 'request.POST' to RoomForm and Django knows wich data to extract from 'request.POST'.
-        form = RoomForm(request.POST)
-        if form.is_valid():
-            room = form.save(commit=False)
-            # You can create Room only if you are logged in therefore 'request.user' - is an actual logged-in user.
-            room.host = request.user
-            room.save()
-            return redirect('home')
+
+        Room.objects.create(
+            host=request.user,
+            topic=topic,
+            name=request.POST.get('name'),
+            description=request.POST.get('description'),
+        )
+
+        return redirect('home')
+    
     context = {'form': form, 'topics': topics}
     return render(request, 'base/room_form.html', context)
 
@@ -156,13 +163,17 @@ def updateRoom(request, pk):
         return HttpResponse('You are not authorized')
 
     if request.method == 'POST':
+        topic_name = request.POST.get('topic')
+        topic, created = Topic.objects.get_or_create(name=topic_name)
         # Need to specify which Room to update, therefor passing in 'instance=room'
-        form = RoomForm(request.POST, instance=room)
-        if form.is_valid():
-            form.save()
-            return redirect('home')
+        room.name = request.POST.get('name')
+        # 'topic' is either existing one or newly created.
+        room.topic = topic
+        room.description = request.POST.get('description')
+        room.save()
+        return redirect('home')
 
-    context = {'form': form, 'topics': topics}
+    context = {'form': form, 'topics': topics, 'room': room}
     return render(request, 'base/room_form.html', context)
 
 @login_required(login_url='login')
@@ -189,3 +200,29 @@ def deleteMessage(request, pk):
         message.delete()
         return redirect('home')
     return render(request, 'base/delete.html', {'obj': message})
+
+@login_required(login_url='login')
+def updateUser(request):
+    user = request.user
+    form = UserForm(instance=user)
+
+    # Processing the form
+    if request.method == 'POST':
+        form = UserForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('user-profile', pk=user.id)
+
+    return render(request, 'base/update-user.html', {'form': form})
+
+def topicsPage(request):
+    # Extracting 'q' value from url
+    q = request.GET.get('q') if request.GET.get('q') != None else ''
+    topics = Topic.objects.filter(name__icontains=q)
+    return render(request, 'base/topics.html', {'topics': topics})
+
+def activityPage(request):
+    # querying data ->
+    # variable is not called 'messages' because it 'messages' is used for flash info messages
+    room_messages = Message.objects.all()
+    return render(request, 'base/activity.html', {'room_messages': room_messages})

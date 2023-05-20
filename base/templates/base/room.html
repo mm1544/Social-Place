@@ -116,7 +116,12 @@
         </div>
       </div>
       <div class="room__message">
-        <form action="#"><input name="" placeholder="Write your message here..." /></form>
+        {% comment %} If 'action=' is "", then we are sending Form to the same URL. {% endcomment %}
+        <form action="" method="POST">
+          {% comment %} everytime we are sending POST method, we need CSRF token. {% endcomment %}
+          {% csrf_token %}
+          <input name="body" placeholder="Write your message here..." />
+        </form>
       </div>
     </div>
     <!-- Room End -->
